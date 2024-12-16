@@ -353,7 +353,7 @@ function _readRunewords(tsv: any, strings: any, skills: any[]): any[] {
   const cComplete = tsv.header.indexOf("complete");
   const types = [];
   for (let i = 1; i < 7; i++) {
-    types.push(tsv.header.indexOf(`itype${i}`))
+    types.push(tsv.header.indexOf(`itype${i}`));
   }
   const runes = [];
   for (let i = 1; i < 7; i++) {
@@ -384,7 +384,7 @@ function _readRunewords(tsv: any, strings: any, skills: any[]): any[] {
       o.id = id;
       o.n = strings[tsv.lines[i][cName]];
       const t = [];
-      for (let j = 0; j <= 6; j++ ) {
+      for (let j = 0; j <= 6; j++) {
         const type = tsv.lines[i][types[j]];
         if (!type) {
           break;
@@ -403,7 +403,7 @@ function _readRunewords(tsv: any, strings: any, skills: any[]): any[] {
       o.r = r;
 
       o.m = [];
-      const s = skills.filter(s => s && s.s);
+      const s = skills.filter((s) => s && s.s);
       for (let j = 1; j < 12; j++) {
         const mod = tsv.lines[i][modifiers[j].cMod];
         if (!mod) {
@@ -547,7 +547,11 @@ function _readItems(tsv: any, itemtypes: any, strings: any): any[] {
       if (tsv.lines[i][cInvheight]) item.ih = +tsv.lines[i][cInvheight];
       if (tsv.lines[i][cInvtransform]) item.it = +tsv.lines[i][cInvtransform];
       if (tsv.lines[i][cType]) item.type = tsv.lines[i][cType];
-      if (tsv.lines[i][cGemSockets]) {item.gemsockets = +tsv.lines[i][cGemSockets]} else {item.gemsockets = 0};
+      if (tsv.lines[i][cGemSockets]) {
+        item.gemsockets = +tsv.lines[i][cGemSockets];
+      } else {
+        item.gemsockets = 0;
+      }
       if (tsv.lines[i][cSpawnable]) item.spawnable = +tsv.lines[i][cSpawnable];
       if (tsv.lines[i][cOneOrTwoHadned]) item.handed1or2 = +tsv.lines[i][cOneOrTwoHadned];
       if (tsv.lines[i][cTwoHanded]) item.handed2 = +tsv.lines[i][cTwoHanded];
@@ -615,7 +619,7 @@ function _readGems(miscItems: any, tsv: any, strings: any) {
   }
 }
 
-function _readSetOrUnqItems(tsv: any, strings: any, skills : any[]): any[] {
+function _readSetOrUnqItems(tsv: any, strings: any, skills: any[]): any[] {
   const arr = [] as any[];
   const cIndex = tsv.header.indexOf("index");
   const cInvfile = tsv.header.indexOf("invfile");
@@ -653,9 +657,7 @@ function _readSetOrUnqItems(tsv: any, strings: any, skills : any[]): any[] {
         m.prop = mod;
         let param = Number(+tsv.lines[i][modifiers[j].cParam]);
         if (Number.isNaN(param)) {
-          param = skills
-          .filter(s => s && s.s)
-          .find(s => s.s == tsv.lines[i][modifiers[j].cParam])?.id;
+          param = skills.filter((s) => s && s.s).find((s) => s.s == tsv.lines[i][modifiers[j].cParam])?.id;
         }
         if (tsv.lines[i][modifiers[j].cParam]) m.p = param;
         if (tsv.lines[i][modifiers[j].cMin]) m.min = +tsv.lines[i][modifiers[j].cMin];

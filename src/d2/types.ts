@@ -404,11 +404,11 @@ export interface IMagicProperty {
   id: number;
   name: string;
   values: number[];
-  param?:number,
-  value?: number,
-  df?: number,
-  type?: string,
-  so?:number,
+  param?: number;
+  value?: number;
+  df?: number;
+  type?: string;
+  so?: number;
   description?: string;
   visible?: boolean;
   op_value?: number;

@@ -6,7 +6,7 @@ import { readConstantData } from "../../src/data/parser";
 describe("parser", () => {
   it("read txt files", async () => {
     //let base = '../../../resurgence'
-    const base = "../../../data/2.6"
+    const base = "../../../data/2.6";
     const v = base.indexOf("2.6") >= 0 ? 99 : 96;
     const files = {};
     let dir = path.join(__dirname, `${base}/global/excel/`);

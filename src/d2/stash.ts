@@ -10,7 +10,7 @@ const defaultConfig = {
   extendedStash: false,
 } as types.IConfig;
 
-export async function read(
+export async function readStash(
   buffer: Uint8Array,
   constants?: types.IConstantData,
   version?: number | null,
@@ -123,7 +123,7 @@ async function readStashPart(stash: types.IStash, reader: BitReader, version: nu
   stash.pages.push(page);
 }
 
-export async function write(
+export async function writeStash(
   data: types.IStash,
   constants: types.IConstantData,
   version: number,

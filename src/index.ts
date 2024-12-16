@@ -6,3 +6,4 @@ export { enhanceAttributes, enhanceItems, enhanceItem, enhancePlayerAttributes, 
 export { getConstantData, setConstantData } from "./d2/constants";
 export * from "./data/parser";
 export * as types from "./d2/types";
+export { readStash, writeStash } from "./d2/stash";

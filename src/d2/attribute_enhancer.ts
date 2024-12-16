@@ -64,48 +64,45 @@ export function enhanceItem(item: types.IItem, constants: types.IConstantData, l
   item.level = boundValue(item.level, 1, 99);
   // Ensure coherence of other attributes with quality
   if (item.given_runeword) {
-      item.runeword_name = constants.runewords[item.runeword_id] ? constants.runewords[item.runeword_id].n : "";
-      if (item.quality > types.Quality.Superior) {
-          // Cannot be a runeword
-          item.given_runeword = 0;
-          item.runeword_id = 0;
-          item.runeword_name = "";
-          item.runeword_attributes = [];
-      }
+    item.runeword_name = constants.runewords[item.runeword_id] ? constants.runewords[item.runeword_id].n : "";
+    if (item.quality > types.Quality.Superior) {
+      // Cannot be a runeword
+      item.given_runeword = 0;
+      item.runeword_id = 0;
+      item.runeword_name = "";
+      item.runeword_attributes = [];
+    }
   }
   if (item.quality !== types.Quality.Magic) {
-      item.magic_prefix = 0;
-      item.magic_suffix = 0;
+    item.magic_prefix = 0;
+    item.magic_suffix = 0;
   }
   if (item.quality === types.Quality.Rare || item.quality === types.Quality.Crafted) {
-      item.rare_name = constants.rare_names[item.rare_name_id] ? constants.rare_names[item.rare_name_id].n : "";
-      item.rare_name2 = constants.rare_names[item.rare_name_id2] ? constants.rare_names[item.rare_name_id2].n : "";
-  }
-  else {
-      item.rare_name_id = 0;
-      item.rare_name = "";
-      item.rare_name_id2 = 0;
-      item.rare_name2 = "";
-      item.magical_name_ids = [0, 0, 0, 0, 0, 0];
+    item.rare_name = constants.rare_names[item.rare_name_id] ? constants.rare_names[item.rare_name_id].n : "";
+    item.rare_name2 = constants.rare_names[item.rare_name_id2] ? constants.rare_names[item.rare_name_id2].n : "";
+  } else {
+    item.rare_name_id = 0;
+    item.rare_name = "";
+    item.rare_name_id2 = 0;
+    item.rare_name2 = "";
+    item.magical_name_ids = [0, 0, 0, 0, 0, 0];
   }
   if (item.quality === types.Quality.Set) {
-      item.set_name = constants.set_items[item.set_id] ? constants.set_items[item.set_id].n : "";
-  }
-  else {
-      item.set_id = 0;
-      item.set_name = "";
-      item.set_attributes = [];
+    item.set_name = constants.set_items[item.set_id] ? constants.set_items[item.set_id].n : "";
+  } else {
+    item.set_id = 0;
+    item.set_name = "";
+    item.set_attributes = [];
   }
   if (item.quality === types.Quality.Unique) {
-      item.unique_name = constants.unq_items[item.unique_id] ? constants.unq_items[item.unique_id].n : "";
-  }
-  else {
-      item.unique_id = 0;
-      item.unique_name = "";
+    item.unique_name = constants.unq_items[item.unique_id] ? constants.unq_items[item.unique_id].n : "";
+  } else {
+    item.unique_id = 0;
+    item.unique_name = "";
   }
   if (item.quality !== types.Quality.Magic && item.quality !== types.Quality.Unique) {
-      item.personalized = 0;
-      item.personalized_name = "";
+    item.personalized = 0;
+    item.personalized_name = "";
   }
 
   let details = null;
@@ -212,7 +209,7 @@ export function compactAttributes(mods: any[], constants: types.IConstantData): 
   const modifiers = [] as types.IMagicProperty[];
   for (const mod of mods) {
     for (const stat of constants.properties[mod.prop] || []) {
-      const statId = constants.magical_properties.findIndex((e) => e.s === stat.s)
+      const statId = constants.magical_properties.findIndex((e) => e.s === stat.s);
       const prop = constants.magical_properties[statId];
       if (prop) {
         let values: number[] = [];
@@ -247,41 +244,35 @@ export function compactAttributes(mods: any[], constants: types.IConstantData): 
             }
             break;
           case "other":
-            param = mod.p
-              ? prop.s == "item_addskill_tab"
-                ? skillTabs[Number(mod.p)].id
-                : mod.p
-              : stat.val;
+            param = mod.p ? (prop.s == "item_addskill_tab" ? skillTabs[Number(mod.p)].id : mod.p) : stat.val;
             if (param && prop.s == "item_addskill_tab") {
-               values = [param & 0x7, (param >> 3) & 0x1fff, mod.max];
-            }
-            else if (param) { 
+              values = [param & 0x7, (param >> 3) & 0x1fff, mod.max];
+            } else if (param) {
               values = [param, mod.max];
-            }
-            else {
-              values = [mod.max]
+            } else {
+              values = [mod.max];
             }
             v = mod.max;
             if (mod.prop == "skill-rand") {
               const rnd = Math.floor(Math.random() * (mod.max - mod.min) + mod.min);
               values = [constants.skills[rnd]?.id, mod.p];
-            }    
+            }
             break;
         }
-       
+
         modifiers.push({
           id: statId,
           name: prop.s,
           values: values,
           value: v,
           param: param,
-          type: stat.type
+          type: stat.type,
         });
       }
     }
   }
   return modifiers;
-}  
+}
 
 function _enhanceAttributeDescription(
   _magic_attributes: types.IMagicProperty[],
@@ -291,11 +282,11 @@ function _enhanceAttributeDescription(
 ): types.IMagicProperty[] {
   if (!_magic_attributes) return [];
   const mods: types.IMagicProperty[] = [..._magic_attributes.map((attr) => ({ ...attr }))];
-  
+
   for (const mod of mods) {
     const prop = constants.magical_properties[mod.id];
     mod.value = mod.values[mod.values?.length - 1];
-    mod.param = prop.dF !== 19 ? mod.values[0]: undefined;
+    mod.param = prop.dF !== 19 ? mod.values[0] : undefined;
     //mod.df =  prop.dF;
     //mod.so = prop.so;
   }
@@ -304,24 +295,18 @@ function _enhanceAttributeDescription(
 
   for (const mod of mods) {
     const prop = constants.magical_properties[mod.id];
-      mod.description = describeSingleMod(mod, prop, constants);
+    mod.description = describeSingleMod(mod, prop, constants);
   }
- 
+
   addModGroups(mods, constants);
-  
+
   if (config?.sortProperties) {
-    mods.sort((a, b) => 
-      constants.magical_properties[b.id]?.so - constants.magical_properties[a.id]?.so 
-    );
+    mods.sort((a, b) => constants.magical_properties[b.id]?.so - constants.magical_properties[a.id]?.so);
   }
   return mods;
 }
 
-function describeSingleMod(
-  mod: any,
-  prop: any,
-  constants: types.IConstantData,
-) {
+function describeSingleMod(mod: any, prop: any, constants: types.IConstantData) {
   if (!prop) return;
   let val = mod.value;
 
@@ -334,42 +319,48 @@ function describeSingleMod(
     }
     val = Math.floor(99 * val);
   }
-  
+
   let modDesc = (val ?? 0) < 0 ? prop.dN : prop.dP;
   if (prop.id == 39 || prop.id == 41 || prop.id == 43 || prop.id == 45) {
     modDesc = prop.dP;
   }
   let valueDesc: string | undefined;
   switch (prop.dF) {
-    case 1: case 6: case 12:
+    case 1:
+    case 6:
+    case 12:
       valueDesc = (val ?? 0) < 0 ? `${val}` : `+${val}`;
       break;
-    case 2: case 7:
+    case 2:
+    case 7:
       valueDesc = `${val}%`;
       break;
-    case 3: case 9:
+    case 3:
+    case 9:
       valueDesc = `${val}`;
       break;
-    case 4: case 8:
+    case 4:
+    case 8:
       valueDesc = (val ?? 0) < 0 ? `${val}%` : `+${val}%`;
       break;
-    case 5: case 10: 
+    case 5:
+    case 10:
       valueDesc = `${Math.floor((val! * 100) / 128)}%`;
       break;
     case 11:
       modDesc = modDesc.replace("%d", `${100 / val!}`);
       break;
-    case 13:  // +[value] to [class] Skill Levels
+    case 13: // +[value] to [class] Skill Levels
       modDesc = formatStr(constants.classes[mod.values[0]!].as, val);
       break;
-    case 14:  // +[value] to [skilltab] Skill Levels ([class] Only)
+    case 14: // +[value] to [skilltab] Skill Levels ([class] Only)
       const skillTab = constants.classes[mod.values[1]]?.ts[mod.values[0]];
       if (skillTab) {
         modDesc = `+${val} to ${skillTab} ${constants.classes[mod.values[1]].co}`;
         modDesc = formatStr(skillTab, val) + " " + constants.classes[mod.values[1]].co;
       }
       break;
-    case 15:  // [chance]% to cast [slvl] [skill] on [event]
+    case 15: // [chance]% to cast [slvl] [skill] on [event]
       modDesc = modDesc
         // Extra % because the actual one is doubled to escape it
         .replace("%d%", `${mod.values[2]}`)
@@ -377,9 +368,7 @@ function describeSingleMod(
         .replace("%s", `${constants.skills[mod.values[1]]?.n}`);
       break;
     case 16: // Level [sLvl] [skill] Aura When Equipped
-      modDesc = modDesc
-        .replace("%d", `${val}`)
-        .replace("%s", `${constants.skills[mod.values[0]]?.n}`);
+      modDesc = modDesc.replace("%d", `${val}`).replace("%s", `${constants.skills[mod.values[0]]?.n}`);
       break;
     case 19: //main
       modDesc = formatStr(modDesc, val);
@@ -390,12 +379,12 @@ function describeSingleMod(
     case 21:
       valueDesc = `${-val!}`;
       break;
-    case 22:  // [value]% / [montype]
+    case 22: // [value]% / [montype]
       valueDesc = `${val}%`;
       break;
-    case 23:  // [value]% / [montype]
+    case 23: // [value]% / [montype]
       valueDesc = `${val}%`;
-      modDesc = formatStr(modDesc, val)
+      modDesc = formatStr(modDesc, val);
       break;
     case 24: // charges
       modDesc = formatStr(modDesc, mod.values[0], constants.skills[mod.values[1]].n, mod.values[2], mod.values[3]);
@@ -413,14 +402,12 @@ function describeSingleMod(
       if (mod.values?.[0] !== mod.values?.[1]) {
         modDesc = prop.dN;
       }
-      modDesc = modDesc
-        .replace("%d", `${mod.values?.[0]}`)
-        .replace("%d", `${mod.values?.[1]}`);
+      modDesc = modDesc.replace("%d", `${mod.values?.[0]}`).replace("%d", `${mod.values?.[1]}`);
       break;
     case 101: // Poison damage
       if (mod.values?.[0] === mod.values?.[1]) {
         modDesc = modDesc
-          .replace( "%d", `${Math.round((mod.values![0] * mod.values![2]) / 256)}`)
+          .replace("%d", `${Math.round((mod.values![0] * mod.values![2]) / 256)}`)
           .replace("%d", `${Math.round(mod.values![2] / 25)}`);
       } else {
         modDesc = prop.dN
@@ -446,15 +433,12 @@ function describeSingleMod(
     if (6 <= prop.dF && prop.dF <= 9) {
       fullDesc += ` ${prop.d2}`;
     }
-  
+
     return fullDesc;
   }
 }
 
-function addModGroups(
-  modifiers: types.IMagicProperty[],
-  constants: types.IConstantData
-  ) {
+function addModGroups(modifiers: types.IMagicProperty[], constants: types.IConstantData) {
   for (const group of statGroups) {
     const mods = modifiers?.filter(({ id }) => group.statsInGroup.includes(id)) ?? [];
     // We assume a mods have been merged so we cannot have duplicates
@@ -470,11 +454,7 @@ function addModGroups(
       continue;
     }
     // Damage increase on non-weapons is awkward, it has all 4 mods that apply in the multiple groups.
-    if (
-      group.s === "group:secondary-dmg" ||
-      group.s === "group:min-dmg" ||
-      group.s === "group:max-dmg"
-    ) {
+    if (group.s === "group:secondary-dmg" || group.s === "group:min-dmg" || group.s === "group:max-dmg") {
       // We already described the range, ignore these "duplicate" groups
       if (modifiers?.find((mod) => mod.name === "group:primary-dmg")) {
         // We still have to remember to delete the description from the mods,
@@ -508,11 +488,11 @@ function addModGroups(
 function formatStr(str: string, ...values: any[]) {
   let i = 0;
   return str?.replace(/%(\+)?([ids%\d])/g, (m, plus, chr) => {
-    if (chr === '%') {
+    if (chr === "%") {
       return chr;
     } else {
-      let value = (chr === 'd' || chr === 's' || chr === 'i' ? values[i++] : values[chr]);
-      if (plus && !isNaN(value) && parseInt(value) > 0) value = '+' + value;
+      let value = chr === "d" || chr === "s" || chr === "i" ? values[i++] : values[chr];
+      if (plus && !isNaN(value) && parseInt(value) > 0) value = "+" + value;
       return value;
     }
   });
@@ -522,10 +502,7 @@ function consolidateMods(mods: types.IMagicProperty[]) {
   for (const mod of mods) {
     let duplicateIndex: number | undefined;
     while (
-      (duplicateIndex = mods.findIndex(
-        (other) => mod !== other && 
-        (mod.id === other.id && "value" in mod && mod.param === other.param)
-      )) >= 0
+      (duplicateIndex = mods.findIndex((other) => mod !== other && mod.id === other.id && "value" in mod && mod.param === other.param)) >= 0
     ) {
       const [duplicate] = mods.splice(duplicateIndex, 1);
       mod.value = (mod.value ?? 0) + (duplicate.value ?? 0);
