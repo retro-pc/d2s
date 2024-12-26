@@ -108,7 +108,7 @@ async function readStashPage(stash: types.IStash, reader: BitReader, version: nu
 
   page.name = reader.ReadNullTerminatedString();
   page.items = await items.readItems(reader, version, constants, defaultConfig);
-  enhanceItems(page.items, constants, 1);
+  enhanceItems(page.items, constants);
   stash.pages.push(page);
 }
 
@@ -119,7 +119,7 @@ async function readStashPart(stash: types.IStash, reader: BitReader, version: nu
     type: 0,
   };
   page.items = await items.readItems(reader, version, constants, defaultConfig);
-  enhanceItems(page.items, constants, 1);
+  enhanceItems(page.items, constants);
   stash.pages.push(page);
 }
 

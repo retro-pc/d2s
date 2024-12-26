@@ -7,36 +7,29 @@ import skillTabs from "../data/SkillTabs.json";
 //enhanced def/durability/weapon damage.
 //lookup socketed compact items (runes/gems) properties for the slot they are in
 //compute attributes like str/resists/etc..
-export async function enhanceAttributes(char: types.ID2S, constants: types.IConstantData, config?: types.IConfig) {
-  enhanceItems(char.items, constants, char.attributes.level, config);
-  enhanceItems([char.golem_item], constants, char.attributes.level, config);
-  enhanceItems(char.merc_items, constants, char.attributes.level, config);
-  enhanceItems(char.corpse_items, constants, char.attributes.level, config);
-  enhancePlayerAttributes(char, constants, config);
+export async function enhanceAttributes(char: types.ID2S, constants: types.IConstantData) {
+  enhanceItems(char.items, constants);
+  enhanceItems([char.golem_item], constants);
+  enhanceItems(char.merc_items, constants);
+  enhanceItems(char.corpse_items, constants);
+  enhancePlayerAttributes(char, constants);
 }
 
-export async function enhancePlayerAttributes(char: types.ID2S, constants: types.IConstantData, config?: types.IConfig) {
+export async function enhancePlayerAttributes(char: types.ID2S, constants: types.IConstantData) {
   const items = char.items.filter((item) => {
     return item.location_id === 1 && item.equipped_id !== 13 && item.equipped_id !== 14;
   });
-
   char.item_bonuses = ([] as types.IMagicProperty[]).concat
     .apply(
       [],
-      items.map((item) => _allAttributes(item, constants))
+      items.map((item) => allAttributes(item, constants))
     )
     .filter((attribute) => attribute != null);
   //char.item_bonuses = _groupAttributes(char.item_bonuses, constants);
-  _enhanceAttributeDescription(char.item_bonuses, constants, char.attributes.level, config);
+  describeMods(char.item_bonuses, constants);
 }
 
-export async function enhanceItems(
-  items: types.IItem[],
-  constants: types.IConstantData,
-  level = 1,
-  config?: types.IConfig,
-  parent?: types.IItem
-) {
+export async function enhanceItems(items: types.IItem[], constants: types.IConstantData) {
   if (!items) {
     return;
   }
@@ -44,23 +37,33 @@ export async function enhanceItems(
     if (!item) {
       continue;
     }
-    if (item.socketed_items && item.socketed_items.length) {
-      enhanceItems(item.socketed_items, constants, level, config, item);
-    }
-    enhanceItem(item, constants, level, config, parent);
+    postProcessItem(item, constants);
   }
 }
 
-export function enhanceItem(item: types.IItem, constants: types.IConstantData, level = 1, config?: types.IConfig, parent?: types.IItem) {
-  if (parent) {
-    //socket item.
-    const pt = constants.armor_items[parent.type] || constants.weapon_items[parent.type] || constants.other_items[item.type];
-    const t = constants.other_items[item.type];
-    if (t.m) {
-      item.magic_attributes = compactAttributes(t.m[pt.gt], constants);
+function postProcessItem(item: types.IItem, constants: types.IConstantData) {
+  if (item.socketed_items && item.socketed_items.length) {
+    for (const socketed of item.socketed_items) {
+      const pt = constants.armor_items[item.type] || constants.weapon_items[item.type] || constants.other_items[socketed.type];
+      const gem = constants.other_items[socketed.type];
+      if (gem.m) {
+        socketed.magic_attributes = generateFixedMods(gem.m[pt.gt], constants);
+        enhanceItem(socketed, constants);
+      }
     }
   }
 
+  enhanceItem(item, constants);
+
+  if (item.magic_attributes || item.runeword_attributes || item.socketed_items) {
+    item.displayed_magic_attributes = describeMods(item.magic_attributes, constants);
+    item.displayed_runeword_attributes = describeMods(item.runeword_attributes, constants);
+    item.combined_magic_attributes = allAttributes(item, constants);
+    item.displayed_combined_magic_attributes = describeMods(item.combined_magic_attributes, constants);
+  }
+}
+
+function enhanceItem(item: types.IItem, constants: types.IConstantData) {
   item.level = boundValue(item.level, 1, 99);
   // Ensure coherence of other attributes with quality
   if (item.given_runeword) {
@@ -196,16 +199,9 @@ export function enhanceItem(item: types.IItem, constants: types.IConstantData, l
       if (set && set.tc) item.transform_color = set.tc;
     }
   }
-
-  if (item.magic_attributes || item.runeword_attributes || item.socketed_items) {
-    item.displayed_magic_attributes = _enhanceAttributeDescription(item.magic_attributes, constants, level, config);
-    item.displayed_runeword_attributes = _enhanceAttributeDescription(item.runeword_attributes, constants, level, config);
-    item.combined_magic_attributes = _allAttributes(item, constants);
-    item.displayed_combined_magic_attributes = _enhanceAttributeDescription(item.combined_magic_attributes, constants, level, config);
-  }
 }
 
-export function compactAttributes(mods: any[], constants: types.IConstantData): types.IMagicProperty[] {
+export function generateFixedMods(mods: any[], constants: types.IConstantData): types.IMagicProperty[] {
   const modifiers = [] as types.IMagicProperty[];
   for (const mod of mods) {
     for (const stat of constants.properties[mod.prop] || []) {
@@ -274,14 +270,9 @@ export function compactAttributes(mods: any[], constants: types.IConstantData): 
   return modifiers;
 }
 
-function _enhanceAttributeDescription(
-  _magic_attributes: types.IMagicProperty[],
-  constants: types.IConstantData,
-  level = 1,
-  config?: types.IConfig
-): types.IMagicProperty[] {
-  if (!_magic_attributes) return [];
-  const mods: types.IMagicProperty[] = [..._magic_attributes.map((attr) => ({ ...attr }))];
+function describeMods(magic_attributes: types.IMagicProperty[], constants: types.IConstantData): types.IMagicProperty[] {
+  if (!magic_attributes) return [];
+  const mods: types.IMagicProperty[] = [...magic_attributes.map((attr) => ({ ...attr }))];
 
   for (const mod of mods) {
     const prop = constants.magical_properties[mod.id];
@@ -292,17 +283,12 @@ function _enhanceAttributeDescription(
   }
 
   consolidateMods(mods);
-
   for (const mod of mods) {
     const prop = constants.magical_properties[mod.id];
     mod.description = describeSingleMod(mod, prop, constants);
   }
-
   addModGroups(mods, constants);
-
-  if (config?.sortProperties) {
-    mods.sort((a, b) => constants.magical_properties[b.id]?.so - constants.magical_properties[a.id]?.so);
-  }
+  mods.sort((a, b) => constants.magical_properties[b.id]?.so - constants.magical_properties[a.id]?.so);
   return mods;
 }
 
@@ -522,7 +508,7 @@ function _classFromCode(code: string, constants: types.IConstantData): any {
   return constants.classes.filter((e) => e.c === code)[0];
 }
 
-function _allAttributes(item: types.IItem, constants: types.IConstantData): types.IMagicProperty[] {
+function allAttributes(item: types.IItem, constants: types.IConstantData): types.IMagicProperty[] {
   let socketed_attributes = [] as types.IMagicProperty[];
   if (item.socketed_items) {
     for (const i of item.socketed_items) {
@@ -533,10 +519,12 @@ function _allAttributes(item: types.IItem, constants: types.IConstantData): type
   }
   const magic_attributes = item.magic_attributes || [];
   const runeword_attributes = item.runeword_attributes || [];
+  const set_attributes = item.set_attributes || [];
   return [
     ...[],
     ...JSON.parse(JSON.stringify(magic_attributes)),
     ...JSON.parse(JSON.stringify(runeword_attributes)),
+    ...JSON.parse(JSON.stringify(set_attributes)),
     ...JSON.parse(JSON.stringify(socketed_attributes)),
   ].filter((attribute) => attribute != null);
 }

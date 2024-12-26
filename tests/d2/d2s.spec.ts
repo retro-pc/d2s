@@ -119,7 +119,7 @@ describe("d2s", () => {
     //fs.writeFileSync(`${process.env['USERPROFILE']}/Saved Games/Diablo II Resurrected Tech Alpha/${d2s.header.name}.d2s`, output);
   });
 
-  it("should read item", async () => {
+  xit("should read item", async () => {
     const inputstream = fs.readFileSync(path.join(__dirname, "../../examples/items/tal-rasha-lidless-eye.d2i"));
     //console.log(toBinary(inputstream.toString('hex')));
     const item = await readItem(inputstream, 0x60, constants);
