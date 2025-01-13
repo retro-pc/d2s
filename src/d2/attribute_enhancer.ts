@@ -519,12 +519,12 @@ function allAttributes(item: types.IItem, constants: types.IConstantData): types
   }
   const magic_attributes = item.magic_attributes || [];
   const runeword_attributes = item.runeword_attributes || [];
-  const set_attributes = item.set_attributes || [];
+  //const set_attributes = item.set_attributes || [];
   return [
     ...[],
     ...JSON.parse(JSON.stringify(magic_attributes)),
     ...JSON.parse(JSON.stringify(runeword_attributes)),
-    ...JSON.parse(JSON.stringify(set_attributes)),
+    //...JSON.parse(JSON.stringify(set_attributes)),
     ...JSON.parse(JSON.stringify(socketed_attributes)),
   ].filter((attribute) => attribute != null);
 }
